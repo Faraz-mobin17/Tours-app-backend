@@ -9,7 +9,7 @@ app.use(express.static("public"));
 
 // routes
 
-import tourRouter from "./routes/tours.route.js";
+import tourRouter from "./routes/tour.route.js";
 
 app.use("/api/v1/tours", tourRouter);
 

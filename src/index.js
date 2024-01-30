@@ -3,7 +3,7 @@ import { app } from "./app.js";
 import connectDB from "./db/connection.db.js";
 // import { testTour } from "./controllers/tour.controller.js";
 
-dotenv.config({ path: "../.env" });
+dotenv.config({ path: "./.env" });
 
 connectDB()
   .then(() => {
