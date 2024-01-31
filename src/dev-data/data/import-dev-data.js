@@ -15,7 +15,7 @@ const main = async () => {
   const connectionString = `${envVars.MONGODB_URI}/${DB_NAME}`;
   try {
     await connectDB(connectionString);
-    app.listen(5000, () =>
+    app.listen(3001, () =>
       console.log(`listening on PORT: ${envVars.PORT || 5000}`)
     );
   } catch (err) {
@@ -38,6 +38,7 @@ const importData = async () => {
     console.log("Data successfully loaded!");
   } catch (err) {
     console.error(err);
+    throw err;
   }
 };
 
@@ -47,6 +48,7 @@ const deleteData = async () => {
     console.log("Data successfully deleted!");
   } catch (err) {
     console.error(err);
+    throw err;
   }
 };
 
