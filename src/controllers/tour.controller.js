@@ -2,9 +2,22 @@ import { Tour } from "../model/tour.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
-const getAllTours = async (_, res) => {
+const getAllTours = async (req, res) => {
   try {
-    const tours = await Tour.find();
+    const queryObj = { ...req.query };
+    const excludeFields = ["page", "sort", "limit", "fields"];
+    excludeFields.forEach((el) => delete queryObj[el]);
+    let queryStr = JSON.stringify(queryObj);
+    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+    let query = Tour.find(JSON.parse(queryStr));
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(",").join(" ");
+      console.log(sortBy);
+      query = query.sort(sortBy);
+    } else {
+      query = query.sort("-createdAt");
+    }
+    const tours = await query;
     if (tours.length === 0) {
       throw new ApiError(400, "No tours found");
     }
@@ -32,6 +45,9 @@ const getParticularUser = async (req, res) => {
 
 const createTour = async (req, res) => {
   try {
+    if (!req.body) {
+      throw new ApiError(400, "Invalid Request: Missing request body");
+    }
     const newTour = await Tour.create(req.body);
     return res
       .status(200)
@@ -43,6 +59,9 @@ const createTour = async (req, res) => {
 
 const deleteTour = async (req, res) => {
   try {
+    if (!req.params.id) {
+      throw new ApiError(400, "Invalid Request: Missing tour ID");
+    }
     const deletedTour = await Tour.findByIdAndDelete(req.params.id);
     if (!deletedTour) {
       throw new ApiError(404, "Tour not found");
@@ -57,6 +76,9 @@ const deleteTour = async (req, res) => {
 
 const updateTour = async (req, res) => {
   try {
+    if (!req.params.id) {
+      throw new ApiError(400, "Invalid Request: Missing tour ID");
+    }
     const updatedTour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,

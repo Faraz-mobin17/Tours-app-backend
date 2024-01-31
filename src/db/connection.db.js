@@ -14,8 +14,6 @@ const connectDB = async (
   } catch (error) {
     console.error("MONGODB connection error", error);
     throw error;
-  } finally {
-    mongoose.connection.close();
   }
 };
 
