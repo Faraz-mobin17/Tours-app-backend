@@ -2,6 +2,7 @@ import { FILE_PATH } from "./constants.js";
 import fs from "fs/promises";
 const readDataFile = async () => {
   try {
+    // console.log(FILE_PATH);
     const data = await fs.readFile(FILE_PATH, "utf-8");
     return JSON.parse(data);
   } catch (error) {
