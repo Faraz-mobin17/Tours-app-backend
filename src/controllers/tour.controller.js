@@ -1,23 +1,50 @@
 import { Tour } from "../model/tour.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-
+import { ApiFeatures } from "../utils/ApiFeatures.js";
 const getAllTours = async (req, res) => {
   try {
-    const queryObj = { ...req.query };
-    const excludeFields = ["page", "sort", "limit", "fields"];
-    excludeFields.forEach((el) => delete queryObj[el]);
-    let queryStr = JSON.stringify(queryObj);
-    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
-    let query = Tour.find(JSON.parse(queryStr));
-    if (req.query.sort) {
-      const sortBy = req.query.sort.split(",").join(" ");
-      console.log(sortBy);
-      query = query.sort(sortBy);
-    } else {
-      query = query.sort("-createdAt");
-    }
-    const tours = await query;
+    // 1) filtering the data
+    // const queryObj = { ...req.query };
+    // const excludeFields = ["page", "sort", "limit", "fields"];
+    // excludeFields.forEach((el) => delete queryObj[el]);
+    // let queryStr = JSON.stringify(queryObj);
+    // queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+    // let query = Tour.find(JSON.parse(queryStr));
+    // 2) sorting the data
+    // if (req.query.sort) {
+    //   const sortBy = req.query.sort.split(",").join(" ");
+    //   console.log(sortBy);
+    //   query = query.sort(sortBy);
+    // } else {
+    //   query = query.sort("-createdAt");
+    // }
+    // 3) limiting fields
+    // if (req.query.fields) {
+    //   const fields = req.query.fields.split(",").join(" ");
+    //   query = query.select(fields);
+    // } else {
+    //   query = query.select("-__v");
+    // }
+    // 4) pagination
+    // page=2&limit=10 , 1-10, page 1, 11-20 , page 2 21-30 and so on
+    // const _page = req.query.page * 1 || 1;
+    // const _limit = req.query.limit * 1 || 100;
+    // const _skip = (_page - 1) * _limit;
+    // query = query.skip(_skip).limit(_limit);
+    // if (req.query.page) {
+    //   const numberOfTours = await Tour.countDocuments();
+    //   if (_skip >= numberOfTours) {
+    //     throw new ApiError(400, "This page does not exists");
+    //   }
+    // }
+    // calling our api feature class
+    const features = new ApiFeatures(Tour.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
+    const tours = await features.query;
     if (tours.length === 0) {
       throw new ApiError(400, "No tours found");
     }
@@ -25,6 +52,9 @@ const getAllTours = async (req, res) => {
       .status(200)
       .json(new ApiResponse(200, tours, "Tours found successfully"));
   } catch (error) {
+    // return res
+    //   .status(400)
+    //   .json(new ApiError(400, error?.message || "Bad Request"));
     throw new ApiError(400, error?.message || "Bad Request");
   }
 };
