@@ -12,5 +12,10 @@ app.use(express.static("public"));
 import tourRouter from "./routes/tour.route.js";
 
 app.use("/api/v1/tours", tourRouter);
-
+app.all("*", (req, res, next) => {
+  return res.status(404).json({
+    success: false,
+    message: `Can't find ${req.originalUrl} on this server`,
+  });
+});
 export { app };
