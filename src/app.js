@@ -13,9 +13,8 @@ import tourRouter from "./routes/tour.route.js";
 
 app.use("/api/v1/tours", tourRouter);
 app.all("*", (req, res, next) => {
-  return res.status(404).json({
-    success: false,
-    message: `Can't find ${req.originalUrl} on this server`,
-  });
+  return res
+    .status(404)
+    .json(new ApiError(404, [], `${req.originalUrl} Not Found`));
 });
 export { app };
