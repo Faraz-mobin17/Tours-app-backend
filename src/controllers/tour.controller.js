@@ -4,6 +4,13 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiFeatures } from "../utils/ApiFeatures.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
+const aliasTopTours = asyncHandler(async (req, res, next) => {
+  req.query.limit = "5";
+  req.query.sort = "-ratingsAverage,price";
+  req.query.fields = "name,price,ratingAverage,difficulty";
+  next();
+});
+
 const getAllTours = asyncHandler(async (req, res) => {
   const features = new ApiFeatures(Tour.find(), req.query)
     .filter()
@@ -72,7 +79,7 @@ const updateTour = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, updatedTour, "Tour updated successfully"));
 });
 
-const getTourStats = asyncHandler(async (req, res) => {
+const getTourStats = asyncHandler(async (_, res) => {
   const stats = await Tour.aggregate([
     {
       $match: { ratingsAverage: { $gte: 4.5 } },
@@ -118,6 +125,20 @@ const getMonthlyPlan = asyncHandler(async (req, res) => {
         tours: { $push: "$name" },
       },
     },
+    {
+      $addFields: { month: "$_id" },
+    },
+    {
+      $project: {
+        _id: 0,
+      },
+    },
+    {
+      $sort: { numberOfToursStarts: -1 },
+    },
+    {
+      $limit: 12,
+    },
   ]);
   return res
     .status(200)
@@ -132,4 +153,5 @@ export {
   updateTour,
   getTourStats,
   getMonthlyPlan,
+  aliasTopTours,
 };

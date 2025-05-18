@@ -7,8 +7,8 @@ import {
   getTourStats,
   getParticularTour,
   getMonthlyPlan,
+  aliasTopTour,
 } from "../controllers/tour.controller.js";
-import { aliasTopTour } from "../middlewares/tour.middleware.js";
 const router = Router();
 router.route("/top-5-tours").get(aliasTopTour, getAllTours);
 router.route("/tour-stats").get(getTourStats);
