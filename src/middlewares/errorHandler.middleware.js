@@ -1,4 +1,5 @@
 import { ApiError } from "../utils/ApiError";
+
 const handleCastErrorDB = (err) => {
   const message = `Invalid ${err.path}: ${err.value}`;
   return new ApiError(400, message);
@@ -33,7 +34,7 @@ const sendErrorProd = (err, res) => {
   }
 };
 
-const errorHandler = (err, req, res, next) => {
+const globalErrorHandler = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";
 
@@ -51,4 +52,4 @@ const errorHandler = (err, req, res, next) => {
   }
 };
 
-export { errorHandler };
+export default globalErrorHandler;
