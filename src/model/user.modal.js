@@ -44,4 +44,12 @@ const userSchema = new Schema({
   },
 });
 
+userSchema.pre("save", async function (next) {
+  // Hash password if it has been modified (or is new)
+  if (!this.isModified("password")) return next();
+  this.password = await bcrypt.hash(this.password, 12);
+  this.passwordConfirm = undefined; // Remove passwordConfirm field
+  next();
+});
+
 export const User = mongoose.model("User", userSchema);
