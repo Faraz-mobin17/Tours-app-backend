@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
-
+import slugify from "slugify";
+// import validator from "validator";
 const tourSchema = new Schema(
   {
     name: {
@@ -7,7 +8,11 @@ const tourSchema = new Schema(
       required: [true, "A tour must have a name"],
       unique: true,
       trim: true,
+      maxlength: [40, "A tour name must have less or equal than 40 characters"],
+      minlength: [2, "A tour name must have more or equal than 10 characters"],
+      // validator: [validator.isAlpha, "Tour name must only contain characters"],
     },
+    slug: String,
     duration: {
       type: Number,
       required: [true, "A tour must have a duration"],
@@ -19,10 +24,17 @@ const tourSchema = new Schema(
     difficulty: {
       type: String,
       required: [true, "A tour must have difficulty"],
+      enum: {
+        values: ["easy", "medium", "difficult"],
+        message: "Difficulty is either: easy, medium, difficult",
+      },
+      lowercase: true,
     },
     ratingsAverage: {
       type: Number,
       default: 4.5,
+      min: [1, "Rating must be above 1.0"],
+      max: [5, "Rating must be below 5.0"],
     },
     ratingQuantity: {
       type: Number,
@@ -34,6 +46,14 @@ const tourSchema = new Schema(
     },
     discount: {
       type: Number,
+      validate: {
+        validator: function (val) {
+          // this only points to current doc on NEW document creation not on update
+          // so discount will not work on update
+          return val < this.price;
+        },
+        message: "Discount ({VALUE}) should be below the price",
+      },
     },
     summary: {
       type: String,
@@ -55,6 +75,10 @@ const tourSchema = new Schema(
       select: false,
     },
     startDates: [Date],
+    secretTour: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     toJSON: { virtuals: true },
@@ -64,6 +88,24 @@ const tourSchema = new Schema(
 
 tourSchema.virtual("durationWeeks").get(function () {
   return this.duration / 7;
+});
+
+// DOCUMENT MIDDLEWARE: runs before .save() and .create() not on .insertMany()
+tourSchema.pre("save", function (next) {
+  this.slug = slugify(this.name, { lower: true });
+  next();
+});
+// DOCUMENT MIDDLEWARE : runs after .save() and .create() not on .insertMany()
+// tourSchema.post("save", function (doc, next) {
+//   console.log(doc);
+//   next();
+// });
+
+// QUERY MIDDLEWARE
+tourSchema.pre(/^find/, function (next) {
+  this.find({ secretTour: { $ne: true } });
+  this.start = Date.now();
+  next();
 });
 
 export const Tour = mongoose.model("Tour", tourSchema);
