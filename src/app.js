@@ -3,7 +3,10 @@ import morgan from "morgan";
 import globalErrorHandler from "./middlewares/error.middleware.js";
 const app = express();
 
-app.use(morgan("dev"));
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
+}
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
