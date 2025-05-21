@@ -52,4 +52,13 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
+userSchema.methods.correctPassword = async function (
+  candidatePassword,
+  userPassword
+) {
+  // we cannot use this.password here because it is not available
+  // this.password is not available because it is not in the document
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
+
 export const User = mongoose.model("User", userSchema);
