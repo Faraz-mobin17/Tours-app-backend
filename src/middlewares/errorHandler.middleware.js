@@ -1,4 +1,4 @@
-import { ApiError } from "../utils/ApiError";
+import { ApiError } from "../utils/ApiError.js";
 
 const handleCastErrorDB = (err) => {
   const message = `Invalid ${err.path}: ${err.value}`;
@@ -34,6 +34,14 @@ const sendErrorProd = (err, res) => {
   }
 };
 
+const handleJWTError = () => {
+  return new ApiError(401, "Invalid token. Please log in again");
+};
+
+const handleJWTExpiredError = () => {
+  return new ApiError(401, "Your token has expired! Please log in again");
+};
+
 const globalErrorHandler = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";
@@ -47,6 +55,12 @@ const globalErrorHandler = (err, req, res, next) => {
     }
     if (error.code === 11000) {
       error = handleDuplicateFieldsDB(error);
+    }
+    if (error.name === "JsonWebTokenError") {
+      error = handleJWTError();
+    }
+    if (error.name === "TokenExpiredError") {
+      error = handleJWTExpiredError();
     }
     sendErrorProd(err, res);
   }
