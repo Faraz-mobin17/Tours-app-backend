@@ -1,6 +1,6 @@
 import { User } from "../model/user.modal";
 import { asyncHandler } from "../middleware/asyncHandler";
-import { ApiError } from "../utils/apiError";
+import { ApiError } from "../utils/ApiError";
 import jwt from "jsonwebtoken";
 
 const signupToken = (id) => {
@@ -83,7 +83,7 @@ const protect = asyncHandler(async (req, res, next) => {
   }
 
   // verify token
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const decoded = await jwt.verify(token, process.env.JWT_SECRET);
 
   // check if user still exists
   const currentUser = await User.findById(decoded.id);
