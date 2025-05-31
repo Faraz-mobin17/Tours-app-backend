@@ -10,7 +10,7 @@ import {
   aliasTopTour,
 } from "../controllers/tour.controller.js";
 
-import { protect } from "../controllers/auth.controller.js";
+import { protect, restrict } from "../controllers/auth.controller.js";
 
 const router = Router();
 router.route("/top-5-tours").get(aliasTopTour, getAllTours);
@@ -21,6 +21,6 @@ router
   .route("/:id")
   .get(getParticularTour)
   .patch(updateTour)
-  .delete(deleteTour);
+  .delete(protect, restrict("admin", "lead-guide"), deleteTour);
 
 export default router;
