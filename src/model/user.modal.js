@@ -42,6 +42,7 @@ const userSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+  passwordChangedAt: Date,
 });
 
 userSchema.pre("save", async function (next) {
@@ -59,6 +60,18 @@ userSchema.methods.correctPassword = async function (
   // we cannot use this.password here because it is not available
   // this.password is not available because it is not in the document
   return await bcrypt.compare(candidatePassword, userPassword);
+};
+
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+    console.log(changedTimestamp, JWTTimestamp);
+    return JWTTimestamp < changedTimestamp;
+  }
+  return false; // user has not changed password after the token was issued
 };
 
 export const User = mongoose.model("User", userSchema);
