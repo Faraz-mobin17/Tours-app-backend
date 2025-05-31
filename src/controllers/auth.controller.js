@@ -105,4 +105,17 @@ const protect = asyncHandler(async (req, res, next) => {
   next();
 });
 
-export { signup, login, protect };
+const restrict = (...roles) => {
+  // dealing with user roles
+  return (req, res, next) => {
+    // roles ['admin', 'lead-guide', 'user'].role = 'user'
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new ApiError(403, "You don't have permission to perform this action")
+      );
+    }
+    next();
+  };
+};
+
+export { signup, login, protect, restrict };
