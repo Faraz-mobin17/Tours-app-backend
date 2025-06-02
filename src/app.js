@@ -14,8 +14,10 @@ app.use(express.static("public"));
 // routes
 
 import tourRouter from "./routes/tour.route.js";
+import userRoute from "./routes/user.route.js";
 
-app.use("/api/v1/tours", tourRouter);
+app.use("/api/v1/tours", tourRouter());
+app.use("/api/v1/users", userRoute());
 
 // error handler middleware for all routes
 app.all("*", (req, res, next) => {
