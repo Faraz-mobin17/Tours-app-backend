@@ -1,12 +1,17 @@
 import { Router } from "express";
-import { signup, login } from "../controllers/auth.controller";
-const router = Router();
+import { signup, login, forgotPassword } from "../controllers/auth.controller";
 
-router.post("/signup", signup);
-router.post("/login", login);
-// router.route("/").get(getAllUsers)
-// .post(createUser);
+export default function userRoute() {
+  const router = Router();
 
-// router.route("/:id").get(getUser).post(updateUser).delete(deleteUser);
+  router.post("/signup", signup);
+  router.post("/login", login);
+  router.post("/forgotPassword", forgotPassword);
+  router.post("/resetPassword", restPassword);
+  // router.route("/").get(getAllUsers)
+  // .post(createUser);
 
-export default router;
+  // router.route("/:id").get(getUser).post(updateUser).delete(deleteUser);
+
+  return router;
+}
