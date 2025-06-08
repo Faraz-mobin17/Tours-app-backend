@@ -2,6 +2,7 @@ import { User } from "../model/user.modal";
 import { asyncHandler } from "../middleware/asyncHandler";
 import { ApiError } from "../utils/ApiError";
 import jwt from "jsonwebtoken";
+import sendEmail from "../utils/email";
 
 const signupToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -118,4 +119,46 @@ const restrict = (...roles) => {
   };
 };
 
-export { signup, login, protect, restrict };
+const forgotPassword = asyncHandler(async (req, res, next) => {
+  // get user based on email
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    return next(new ApiError(404, "There is no user with this email address"));
+  }
+  // generate the random reset token
+  const resetToken = user.createPasswordResetToken();
+  await resetToken.save({ validateBeforeSave: false }); // deactivate all the validators in schema
+
+  // create reset url
+  const resetURL = `${req.protocol}://${req.get(
+    "host"
+  )}/api/v1/auth/resetPassword/${resetToken}`;
+
+  const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`;
+  try {
+    // send email
+    await sendEmail({
+      email: user.email,
+      subject: "Your password reset token (valid for 10 min)",
+      message,
+    });
+
+    return res.status(200).json({
+      status: "success",
+      message: "Token sent to email!",
+    });
+  } catch (err) {
+    // if error occurs, reset the password reset token and expiration
+    user.createPasswordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return next(new ApiError(500, "There was an error sending the email"));
+  }
+});
+
+const resetPassword = asyncHandler(async (req, res, next) => {
+  // reset password func
+});
+
+export { signup, login, protect, restrict, forgotPassword, resetPassword };
