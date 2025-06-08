@@ -7,7 +7,7 @@ export default function userRoute() {
   router.post("/signup", signup);
   router.post("/login", login);
   router.post("/forgotPassword", forgotPassword);
-  router.post("/resetPassword", restPassword);
+  router.patch("/resetPassword/:token", restPassword);
   // router.route("/").get(getAllUsers)
   // .post(createUser);
 
