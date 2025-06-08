@@ -1,5 +1,6 @@
+import crypto from "node:crypto";
 import { User } from "../model/user.modal";
-import { asyncHandler } from "../middleware/asyncHandler";
+import { asyncHandler } from "../utils/asyncHandler";
 import { ApiError } from "../utils/ApiError";
 import jwt from "jsonwebtoken";
 import sendEmail from "../utils/email";
@@ -159,6 +160,46 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
 
 const resetPassword = asyncHandler(async (req, res, next) => {
   // reset password func
+  // 1) get user based on the token
+  const { token } = req.params;
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+  // 2) if token has not expired, set the new password
+  if (!user) {
+    return next(new ApiError(404, "User not found"));
+  }
+
+  // 3) update changedPasswordAt property for the user
+
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save(); // we want the validators to check passwords
+  // 4) log the user in, send JWT
+
+  const newToken = signupToken(user._id);
+
+  // send response
+  return res.status(201).json({
+    status: "success",
+    newToken,
+    message: "User created successfully",
+    data: {
+      user,
+    },
+  });
+});
+
+const updatePassword = asyncHandler(async (req, res, next) => {
+  // 1) get the user from the collection
+  // 2) check if posted current password is current
+  // 3) if so, update the password
+  // 4) login user and send JWT
 });
 
 export { signup, login, protect, restrict, forgotPassword, resetPassword };
