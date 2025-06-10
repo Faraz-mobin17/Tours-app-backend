@@ -11,6 +11,20 @@ const signupToken = (id) => {
   });
 };
 
+const singupTokenWithResponse = (user) => {
+  const token = signupToken(user._id);
+
+  // send response
+  return res.status(201).json({
+    status: "success",
+    token,
+    message: "User created successfully",
+    data: {
+      user,
+    },
+  });
+};
+
 const signup = asyncHandler(async (req, res, next) => {
   const { name, email, password, passwordConfirm } = req.body;
   // check if user already exists
@@ -57,17 +71,18 @@ const login = asyncHandler(async (req, res, next) => {
   }
 
   // generate token
-  const token = signupToken(user._id);
+  // const token = signupToken(user._id);
 
-  // send response
-  return res.status(200).json({
-    status: "success",
-    token,
-    message: "User logged in successfully",
-    data: {
-      user,
-    },
-  });
+  // // send response
+  // return res.status(200).json({
+  //   status: "success",
+  //   token,
+  //   message: "User logged in successfully",
+  //   data: {
+  //     user,
+  //   },
+  // });
+  return singupTokenWithResponse(user);
 });
 
 const protect = asyncHandler(async (req, res, next) => {
@@ -181,25 +196,30 @@ const resetPassword = asyncHandler(async (req, res, next) => {
   user.passwordResetExpires = undefined;
   await user.save(); // we want the validators to check passwords
   // 4) log the user in, send JWT
-
-  const newToken = signupToken(user._id);
-
-  // send response
-  return res.status(201).json({
-    status: "success",
-    newToken,
-    message: "User created successfully",
-    data: {
-      user,
-    },
-  });
+  return singupTokenWithResponse(user);
 });
 
 const updatePassword = asyncHandler(async (req, res, next) => {
   // 1) get the user from the collection
+  const user = await User.findById(req.user.id).select("+password"); // not included in the output so we are using select('+password) here
   // 2) check if posted current password is current
+  if (!(await user.correctPassword(req.body.passwordConfirm, user.password))) {
+    return next(new ApiError(401, "Your current password is wrong"));
+  }
   // 3) if so, update the password
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  await user.save(); // we need validators so we are not turning it off
   // 4) login user and send JWT
+  return singupTokenWithResponse(user);
 });
 
-export { signup, login, protect, restrict, forgotPassword, resetPassword };
+export {
+  signup,
+  login,
+  protect,
+  restrict,
+  forgotPassword,
+  resetPassword,
+  updatePassword,
+};
