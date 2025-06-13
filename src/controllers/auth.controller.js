@@ -11,11 +11,21 @@ const signupToken = (id) => {
   });
 };
 
-const singupTokenWithResponse = (user) => {
+const singupTokenWithResponse = (user, statusCode = 201) => {
   const token = signupToken(user._id);
-
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true,
+  };
+  if (process.env.NODE_ENV === "production") {
+    cookieOptions.secure = true;
+  }
+  res.cookie("jwt", token, cookieOptions);
+  user.password = undefined; // remove the password from the output
   // send response
-  return res.status(201).json({
+  return res.status(statusCode).json({
     status: "success",
     token,
     message: "User created successfully",
@@ -42,17 +52,7 @@ const signup = asyncHandler(async (req, res, next) => {
     passwordConfirm,
   });
 
-  const token = signupToken(user._id);
-
-  // send response
-  return res.status(201).json({
-    status: "success",
-    token,
-    message: "User created successfully",
-    data: {
-      user,
-    },
-  });
+  return singupTokenWithResponse(user, 200);
 });
 
 const login = asyncHandler(async (req, res, next) => {
@@ -203,7 +203,7 @@ const updatePassword = asyncHandler(async (req, res, next) => {
   // 1) get the user from the collection
   const user = await User.findById(req.user.id).select("+password"); // not included in the output so we are using select('+password) here
   // 2) check if posted current password is current
-  if (!(await user.correctPassword(req.body.passwordConfirm, user.password))) {
+  if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
     return next(new ApiError(401, "Your current password is wrong"));
   }
   // 3) if so, update the password
