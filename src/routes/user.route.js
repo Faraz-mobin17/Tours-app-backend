@@ -1,5 +1,12 @@
 import { Router } from "express";
-import { signup, login, forgotPassword } from "../controllers/auth.controller";
+import {
+  signup,
+  login,
+  forgotPassword,
+  updatePassword,
+  protect,
+} from "../controllers/auth.controller";
+import { deleteMe, updateMe } from "../controllers/user.controller";
 
 export default function userRoute() {
   const router = Router();
@@ -8,6 +15,9 @@ export default function userRoute() {
   router.post("/login", login);
   router.post("/forgotPassword", forgotPassword);
   router.patch("/resetPassword/:token", restPassword);
+  router.patch("/updateMyPassword", protect, updatePassword);
+  router.patch("/updateMe", protect, updateMe);
+  router.delete("/deleteMe", protect, deleteMe);
   // router.route("/").get(getAllUsers)
   // .post(createUser);
 
