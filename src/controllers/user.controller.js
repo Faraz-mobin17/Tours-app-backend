@@ -1,6 +1,6 @@
-import { User } from "../model/user.modal";
-import { ApiError } from "../utils/ApiError";
-import { asyncHandler } from "../utils/asyncHandler";
+import { User } from "../model/user.modal.js";
+import { ApiError } from "../utils/ApiError.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
