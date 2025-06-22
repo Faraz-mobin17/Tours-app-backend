@@ -1,6 +1,6 @@
 import express from "express";
 import morgan from "morgan";
-import globalErrorHandler from "./middlewares/error.middleware.js";
+import globalErrorHandler from "./middlewares/errorHandler.middleware.js";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import ExpressMongoSanitize from "express-mongo-sanitize";
