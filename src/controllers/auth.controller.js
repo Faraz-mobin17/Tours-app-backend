@@ -1,9 +1,9 @@
 import crypto from "node:crypto";
-import { User } from "../model/user.modal";
-import { asyncHandler } from "../utils/asyncHandler";
-import { ApiError } from "../utils/ApiError";
+import { User } from "../model/user.modal.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiError } from "../utils/ApiError.js";
 import jwt from "jsonwebtoken";
-import sendEmail from "../utils/email";
+import sendEmail from "../utils/email.js";
 
 const signupToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
