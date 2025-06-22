@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import slugify from "slugify";
+import { User } from "./user.modal.js";
 // import validator from "validator";
 const tourSchema = new Schema(
   {
@@ -79,6 +80,31 @@ const tourSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    startLocation: {
+      // GEO location data
+      type: {
+        type: String,
+        default: "Point",
+        enum: ["Point"],
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: "Point",
+          enum: ["Point"],
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number,
+      },
+    ],
+    guides: Array,
   },
   {
     toJSON: { virtuals: true },
@@ -100,6 +126,13 @@ tourSchema.pre("save", function (next) {
 //   console.log(doc);
 //   next();
 // });
+
+tourSchema.pre("save", async function (next) {
+  const guidesPromises = this.guides.map(async (id) => await User.findById(id));
+  this.guides = await Promise.all(guidesPromises);
+  console.log(this.guides);
+  next();
+});
 
 // QUERY MIDDLEWARE
 tourSchema.pre(/^find/, function (next) {
