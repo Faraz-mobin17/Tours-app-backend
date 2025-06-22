@@ -25,7 +25,7 @@ const main = async () => {
 
 const tours = await new Promise(async (resolve, reject) => {
   try {
-    const data = await readFile(`${__dirname}/tours-simple.json`, "utf-8");
+    const data = await readFile(`${__dirname}/tours.json`, "utf-8");
     resolve(JSON.parse(data));
   } catch (err) {
     reject(err);
