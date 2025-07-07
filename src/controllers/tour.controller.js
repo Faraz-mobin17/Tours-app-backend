@@ -26,7 +26,7 @@ const getAllTours = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, tours, "Tours found successfully"));
 });
 
-const getParticularTour = asyncHandler(async (req, res) => {
+const getTour = asyncHandler(async (req, res) => {
   const tour = await Tour.findById(req.params.id);
   if (!tour) {
     return res.status(404).json(new ApiError(404, "Tour not found"));
@@ -147,7 +147,7 @@ const getMonthlyPlan = asyncHandler(async (req, res) => {
 
 export {
   getAllTours,
-  getParticularTour,
+  getTour,
   createTour,
   deleteTour,
   updateTour,
