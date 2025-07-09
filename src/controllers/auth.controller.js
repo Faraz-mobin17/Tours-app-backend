@@ -214,7 +214,7 @@ const updatePassword = asyncHandler(async (req, res, next) => {
   return singupTokenWithResponse(user);
 });
 
-export {
+export const authController = {
   signup,
   login,
   protect,
