@@ -51,9 +51,11 @@ app.use(express.static("public"));
 
 import tourRouter from "./routes/tour.route.js";
 import userRoute from "./routes/user.route.js";
+import reviewRoute from "./routes/review.route.js";
 
 app.use("/api/v1/tours", tourRouter());
 app.use("/api/v1/users", userRoute());
+app.use("/api/v1/reviews", reviewRoute);
 
 // error handler middleware for all routes
 app.all("*", (req, res, next) => {
