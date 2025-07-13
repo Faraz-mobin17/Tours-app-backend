@@ -1,15 +1,17 @@
 import { ApiError } from "../utils/ApiError.js";
-
+import { env } from "../../config/serverConfig.js";
 const handleCastErrorDB = (err) => {
   const message = `Invalid ${err.path}: ${err.value}`;
   return new ApiError(400, message);
 };
+
 const handleDuplicateFieldsDB = (err) => {
   const value = err.errmsg.match(/(["'])(\\?.)*?\1/)[0];
   console.log(value);
   const message = `Duplicate fields value: ${value}. Please use another value`;
   return new ApiError(400, message);
 };
+
 const sendErrorDev = (err, res) => {
   res.status(err.statusCode).json({
     status: err.status,
@@ -46,10 +48,12 @@ const globalErrorHandler = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";
 
-  if (process.env.NODE_ENV === "development") {
+  if (env.NODE_ENV === "development") {
     sendErrorDev(err, res);
-  } else if (process.env.NODE_ENV === "production") {
+  } else if (env.NODE_ENV === "production") {
     let error = { ...err };
+    error.message = err.message; // Ensure message is copied properly
+
     if (error.name === "CastError") {
       error = handleCastErrorDB(error);
     }
@@ -62,7 +66,9 @@ const globalErrorHandler = (err, req, res, next) => {
     if (error.name === "TokenExpiredError") {
       error = handleJWTExpiredError();
     }
-    sendErrorProd(err, res);
+
+    // Fixed: Send the processed 'error' object, not the original 'err'
+    sendErrorProd(error, res);
   }
 };
 
