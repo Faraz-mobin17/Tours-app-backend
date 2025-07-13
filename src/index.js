@@ -1,4 +1,4 @@
-import envVars from "../config/serverConfig.js";
+import { env } from "../config/serverConfig.js";
 import { app } from "./app.js";
 import connectDB from "./db/connection.db.js";
 
@@ -6,8 +6,8 @@ import connectDB from "./db/connection.db.js";
 
 connectDB()
   .then(() => {
-    app.listen(envVars.PORT || 5000, () =>
-      console.log(`listening on PORT: ${envVars.PORT}`)
+    app.listen(env.PORT || 5000, () =>
+      console.log(`listening on PORT: ${env.PORT}`)
     );
   })
   .catch((err) => console.log("MongoDB Connection failed", err));
