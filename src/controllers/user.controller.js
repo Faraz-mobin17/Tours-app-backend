@@ -55,4 +55,4 @@ const deleteMe = asyncHandler(async (req, res, next) => {
   });
 });
 
-export { getAllUsers, updateMe, deleteMe };
+export const userController = { getAllUsers, updateMe, deleteMe };
