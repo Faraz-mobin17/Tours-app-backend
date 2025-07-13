@@ -1,28 +1,23 @@
 import { Router } from "express";
-import {
-  signup,
-  login,
-  forgotPassword,
-  updatePassword,
-  protect,
-  resetPassword,
-} from "../controllers/auth.controller.js";
-import { deleteMe, updateMe } from "../controllers/user.controller.js";
 
-export default function userRoute() {
-  const router = Router();
+import { authController, userController } from "../controllers/index.js";
 
-  router.post("/signup", signup);
-  router.post("/login", login);
-  router.post("/forgotPassword", forgotPassword);
-  router.patch("/resetPassword/:token", resetPassword);
-  router.patch("/updateMyPassword", protect, updatePassword);
-  router.patch("/updateMe", protect, updateMe);
-  router.delete("/deleteMe", protect, deleteMe);
-  // router.route("/").get(getAllUsers)
-  // .post(createUser);
+const userRouter = Router();
 
-  // router.route("/:id").get(getUser).post(updateUser).delete(deleteUser);
+userRouter.post("/signup", authController.signup);
+userRouter.post("/login", authController.login);
+userRouter.post("/forgotPassword", authController.forgotPassword);
+userRouter.patch("/resetPassword/:token", authController.resetPassword);
+userRouter.patch(
+  "/updateMyPassword",
+  authController.protect,
+  authController.updatePassword
+);
+userRouter.patch("/updateMe", authController.protect, userController.updateMe);
+userRouter.delete("/deleteMe", authController.protect, userController.deleteMe);
+// router.route("/").get(getAllUsers)
+// .post(createUser);
 
-  return router;
-}
+// router.route("/:id").get(getUser).post(updateUser).delete(deleteUser);
+
+export { userRouter };
