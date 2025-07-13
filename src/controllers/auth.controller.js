@@ -4,31 +4,37 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import jwt from "jsonwebtoken";
 import sendEmail from "../utils/email.js";
-
+import { env } from "../../config/serverConfig.js";
 const signupToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
+  return jwt.sign({ id }, env.JWT_SECRET, {
+    expiresIn: env.JWT_EXPIRES_IN,
   });
 };
 
-const singupTokenWithResponse = (user, statusCode = 201) => {
+const signupTokenWithResponse = (user, statusCode = 201, req, res) => {
   const token = signupToken(user._id);
+
   const cookieOptions = {
     expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+      Date.now() + env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
   };
-  if (process.env.NODE_ENV === "production") {
+
+  if (env.NODE_ENV === "production") {
     cookieOptions.secure = true;
   }
+
   res.cookie("jwt", token, cookieOptions);
+
   user.password = undefined; // remove the password from the output
+  user.__v = undefined;
+  console.log("user sign up successfull");
   // send response
   return res.status(statusCode).json({
     status: "success",
     token,
-    message: "User created successfully",
+    message: "User sign up successfull",
     data: {
       user,
     },
@@ -36,14 +42,16 @@ const singupTokenWithResponse = (user, statusCode = 201) => {
 };
 
 const signup = asyncHandler(async (req, res, next) => {
+  console.log(req.body);
   const { name, email, password, passwordConfirm } = req.body;
   // check if user already exists
   const userExists = await User.findOne({ email });
 
   if (userExists) {
+    console.log("inside userexits in signup func");
     return next(new ApiError(400, "User already exists"));
   }
-
+  console.log("creating user");
   // create user
   const user = await User.create({
     name,
@@ -52,7 +60,7 @@ const signup = asyncHandler(async (req, res, next) => {
     passwordConfirm,
   });
 
-  return singupTokenWithResponse(user, 200);
+  return signupTokenWithResponse(user, 200, req, res);
 });
 
 const login = asyncHandler(async (req, res, next) => {
@@ -82,7 +90,7 @@ const login = asyncHandler(async (req, res, next) => {
   //     user,
   //   },
   // });
-  return singupTokenWithResponse(user);
+  return signupTokenWithResponse(user, 200, req, res);
 });
 
 const protect = asyncHandler(async (req, res, next) => {
@@ -100,7 +108,7 @@ const protect = asyncHandler(async (req, res, next) => {
   }
 
   // verify token
-  const decoded = await jwt.verify(token, process.env.JWT_SECRET);
+  const decoded = await jwt.verify(token, env.JWT_SECRET);
 
   // check if user still exists
   const currentUser = await User.findById(decoded.id);
@@ -143,7 +151,7 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
   }
   // generate the random reset token
   const resetToken = user.createPasswordResetToken();
-  await resetToken.save({ validateBeforeSave: false }); // deactivate all the validators in schema
+  await user.save({ validateBeforeSave: false }); // deactivate all the validators in schema
 
   // create reset url
   const resetURL = `${req.protocol}://${req.get(
@@ -165,7 +173,8 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
     });
   } catch (err) {
     // if error occurs, reset the password reset token and expiration
-    user.createPasswordResetToken = undefined;
+    // Fix error handling in forgotPassword
+    user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
 
@@ -196,7 +205,7 @@ const resetPassword = asyncHandler(async (req, res, next) => {
   user.passwordResetExpires = undefined;
   await user.save(); // we want the validators to check passwords
   // 4) log the user in, send JWT
-  return singupTokenWithResponse(user);
+  return signupTokenWithResponse(user, 200, req, res);
 });
 
 const updatePassword = asyncHandler(async (req, res, next) => {
