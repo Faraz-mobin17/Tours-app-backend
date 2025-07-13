@@ -1,6 +1,5 @@
 import mongoose, { Schema } from "mongoose";
 import slugify from "slugify";
-import { User } from "./user.modal.js";
 // import validator from "validator";
 const tourSchema = new Schema(
   {
@@ -114,6 +113,13 @@ const tourSchema = new Schema(
 // virtual properties
 tourSchema.virtual("durationWeeks").get(function () {
   return this.duration / 7;
+});
+
+// virtual populate connecting review and tour models
+tourSchema.virtual("reviews", {
+  ref: "Review",
+  foreignField: "tour",
+  localField: "_id",
 });
 
 // DOCUMENT MIDDLEWARE: runs before .save() and .create() not on .insertMany()
