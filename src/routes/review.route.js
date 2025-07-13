@@ -2,9 +2,9 @@ import express from "express";
 import { reviewController } from "../controllers/review.controller.js";
 import { authController } from "../controllers/auth.controller.js";
 
-const router = express.Router();
+const reviewRouter = express.Router({ mergeParams: true });
 
-router
+reviewRouter
   .route("/")
   .get(reviewController.getAllReviews)
   .post(
@@ -13,4 +13,4 @@ router
     reviewController.createReview
   );
 
-export default router;
+export { reviewRouter };
