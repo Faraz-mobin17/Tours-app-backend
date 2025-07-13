@@ -1,21 +1,21 @@
 import nodemailer from "nodemailer";
-
+import { env } from "../../config/serverConfig.js";
 export const sendEmail = async (options) => {
   // 1) create a transporter
   // Looking to send emails in production? Check out our Email API/SMTP product!
   var transport = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT,
+    host: env.EMAIL_HOST,
+    port: env.EMAIL_PORT,
     secure: false, // true for 465, false for other ports
     auth: {
-      user: process.env.EMAIL_USERNAME,
-      pass: process.env.EMAIL_PASSWORD,
+      user: env.EMAIL_USERNAME,
+      pass: env.EMAIL_PASSWORD,
     },
   });
   // 2) Define the email options
 
   const mailOptions = {
-    from: `"${process.env.EMAIL_FROM_NAME}" <${process.env.EMAIL_FROM}>`, // sender address
+    from: `"${env.EMAIL_FROM_NAME}" <${env.EMAIL_FROM}>`, // sender address
     to: options.email, // list of receivers
     subject: options.subject, // Subject line
     text: options.message, // plain text body
