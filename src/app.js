@@ -6,6 +6,7 @@ import helmet from "helmet";
 import ExpressMongoSanitize from "express-mongo-sanitize";
 import xssclean from "xss-clean";
 import hpp from "hpp";
+import { env } from "../config/serverConfig.js";
 
 const app = express();
 
@@ -13,7 +14,8 @@ const app = express();
 // set security http header
 app.use(helmet());
 // development env
-if (process.env.NODE_ENV === "development") {
+if (env.NODE_ENV === "development") {
+  console.log("inside morgan dev");
   app.use(morgan("dev"));
 }
 // limit request from same IP
@@ -49,25 +51,18 @@ app.use(express.static("public"));
 
 // routes
 
-import tourRouter from "./routes/tour.route.js";
-import userRoute from "./routes/user.route.js";
-import reviewRoute from "./routes/review.route.js";
+import { reviewRouter, userRouter, tourRouter } from "./routes/index.js";
 
-app.use("/api/v1/tours", tourRouter());
-app.use("/api/v1/users", userRoute());
-app.use("/api/v1/reviews", reviewRoute);
+app.use("/api/v1/tours", tourRouter);
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/reviews", reviewRouter);
 
-// error handler middleware for all routes
+// 3) Catch-all route for unhandled routes (MUST come before error handler)
 app.all("*", (req, res, next) => {
-  // return res
-  //   .status(404)
-  //   .json(new ApiError(404, [], `${req.originalUrl} Not Found`));
-
   const err = new ApiError(404, `${req.originalUrl} Not Found`);
   next(err);
 });
 
-// error handler middleware
+// 4) Global error handler middleware (MUST be the very last middleware)
 app.use(globalErrorHandler);
-
 export { app };
