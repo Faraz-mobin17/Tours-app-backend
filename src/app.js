@@ -1,5 +1,6 @@
 import express from "express";
 import morgan from "morgan";
+import cors from "cors";
 import globalErrorHandler from "./middlewares/errorHandler.middleware.js";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
@@ -26,6 +27,13 @@ const limiter = rateLimit({
 });
 
 app.use("/api", limiter); // only apply to api routes
+
+app.use(
+  cors({
+    origin: env.ORIGIN,
+    optionsSuccessStatus: 200,
+  })
+);
 // body parser, reading data from the body into req.body
 app.use(express.json({ limit: "16kb" }));
 // data sanitization against NoSQL query injection
@@ -46,7 +54,7 @@ app.use(
   })
 );
 
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
 
 // routes
